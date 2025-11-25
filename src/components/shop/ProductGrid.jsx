@@ -1,7 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import ProductCard from './ProductCard';
-import { staggerContainer, fadeInUp } from '../../utils/animations';
 
 const ProductGrid = ({ products, cart, setCart }) => {
   if (products.length === 0) {
@@ -22,10 +21,11 @@ const ProductGrid = ({ products, cart, setCart }) => {
 
   return (
     <motion.div
-      variants={staggerContainer}
-      initial="hidden"
-      animate="visible"
-      className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+      // Animación simple: aparece todo junto en 0.3 segundos
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.3 }}
+      className="grid grid-cols-2 lg:grid-cols-3 gap-4 md:gap-8"
     >
       {products.map((product, index) => (
         <ProductCard
