@@ -1,15 +1,38 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { products } from '../../data/products';
+// BORRAR: import { products } from '../../data/products'; 
+import { productService } from '../../lib/supabase'; // AGREGAR ESTO
 import ProductCard from '../shop/ProductCard';
 
 const RecommendedProducts = ({ currentProductSlug, cart, setCart }) => {
-  // Filtramos productos que no sean el actual y que sean de la misma categoría o tags similares
-  // Por ahora, solo excluiremos el actual. Puedes añadir lógica más compleja si quieres.
-  const recommended = products.filter(p => p.slug !== currentProductSlug).slice(0, 4);
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // AGREGAR: Efecto para cargar productos desde Supabase
+  useEffect(() => {
+    const loadProducts = async () => {
+      try {
+        // Traemos los productos (podrías optimizar esto en el futuro para traer solo algunos)
+        const data = await productService.getAll();
+        setProducts(data || []);
+      } catch (error) {
+        console.error('Error al cargar recomendaciones:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadProducts();
+  }, []);
+
+  // Lógica de filtrado aplicada sobre los datos traídos de la BD
+  const recommended = products
+    .filter(p => p.slug !== currentProductSlug && p.active) // Aseguramos que estén activos
+    .slice(0, 4);
+
+  if (loading) return null; // O un spinner pequeño
 
   if (recommended.length === 0) {
-    return null; // No muestra la sección si no hay recomendaciones
+    return null;
   }
 
   const containerVariants = {
@@ -44,15 +67,15 @@ const RecommendedProducts = ({ currentProductSlug, cart, setCart }) => {
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true, amount: 0.1 }}
-        className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-8"
+        className="grid grid-cols-2 lg:grid-cols-4 gap-6"
       >
         {recommended.map((product, index) => (
-          <ProductCard 
-            key={product.id} 
-            product={product} 
-            index={index} 
-            cart={cart} 
-            setCart={setCart} 
+          <ProductCard
+            key={product.id}
+            product={product}
+            index={index}
+            cart={cart}
+            setCart={setCart}
           />
         ))}
       </motion.div>

@@ -1,104 +1,131 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import PageTransition from '../components/common/PageTransition';
 import Hero from '../components/home/Hero';
 import FeaturedProducts from '../components/home/FeaturedProducts';
 import BrandStory from '../components/home/BrandStory';
 import Testimonials from '../components/home/Testimonials';
-import LoadingSpinner from '../components/common/LoadingSpinner';
-import { Truck, ShieldCheck, CreditCard, RotateCcw, ArrowRight, MessageCircle } from 'lucide-react';
+import { Sparkles, Truck, Shield, Heart } from 'lucide-react';
+import { fadeInUp, staggerContainer } from '../utils/animations';
 import { productService, testimonialService } from '../lib/supabase';
 
 const Home = ({ cart, setCart }) => {
-  const [featuredProducts, setFeaturedProducts] = useState([]);
-  const [testimonialsData, setTestimonialsData] = useState([]);
   const [loading, setLoading] = useState(true);
-
-  const features = [
-    { icon: Truck, title: 'Envío Gratis', description: 'En compras +$60.000' },
-    { icon: CreditCard, title: '3 y 6 Cuotas', description: 'Sin interés con tarjetas' },
-    { icon: ShieldCheck, title: 'Compra Segura', description: 'Tus datos protegidos' },
-    { icon: RotateCcw, title: 'Cambio Gratis', description: 'Primer cambio sin cargo' }
-  ];
+  const [featuredProducts, setFeaturedProducts] = useState([]);
+  const [testimonials, setTestimonials] = useState([]);
 
   useEffect(() => {
-    const loadData = async () => {
-      try {
-        // Cargar productos y testimonios en paralelo
-        const [products, testimonials] = await Promise.all([
-          productService.getAll(),
-          testimonialService.getAll()
-        ]);
-
-        // Filtrar solo los destacados y activos
-        const featured = products.filter(p => p.featured === true && p.active !== false).slice(0, 8);
-        const activeTestimonials = testimonials.filter(t => t.active !== false);
-
-        setFeaturedProducts(featured);
-        setTestimonialsData(activeTestimonials);
-      } catch (error) {
-        console.error("Error cargando home:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
     loadData();
   }, []);
 
-  if (loading) return <LoadingSpinner fullScreen />;
+  const loadData = async () => {
+    try {
+      const [productsData, testimonialsData] = await Promise.all([
+        productService.getFeatured(),
+        testimonialService.getAll()
+      ]);
+
+      setFeaturedProducts(productsData);
+      setTestimonials(testimonialsData);
+    } catch (error) {
+      console.error('Error al cargar datos:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const features = [
+    {
+      icon: Truck,
+      title: 'Envío Gratis',
+      description: 'En compras superiores a $25.000'
+    },
+    {
+      icon: Shield,
+      title: 'Compra Segura',
+      description: 'Protección total en tus pagos'
+    },
+    {
+      icon: Sparkles,
+      title: 'Calidad Premium',
+      description: 'Materiales de primera calidad'
+    },
+    {
+      icon: Heart,
+      title: 'Garantía 30 días',
+      description: 'Devolución sin preguntas'
+    }
+  ];
+
+  if (loading) {
+    return (
+      <PageTransition>
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-black mx-auto mb-4"></div>
+            <p className="text-gray-600">Cargando...</p>
+          </div>
+        </div>
+      </PageTransition>
+    );
+  }
 
   return (
     <PageTransition>
-      <div className="overflow-hidden bg-white">
+      <div className="overflow-hidden">
+        {/* Hero Section */}
         <Hero />
 
-        {/* Features */}
-        <section className="py-10 border-b border-gray-100">
-          <div className="container mx-auto px-6">
-            <div className="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-4 -mx-6 px-6 md:grid md:grid-cols-4 md:gap-8 md:pb-0 md:mx-0 md:px-0 scrollbar-hide">
+        {/* Features Section */}
+        <section className="py-20 px-6 bg-white relative overflow-hidden">
+          <div className="absolute top-0 left-0 w-full h-full opacity-5">
+            <div className="absolute top-10 left-10 w-72 h-72 bg-mo-pink-300 rounded-full blur-3xl" />
+            <div className="absolute bottom-10 right-10 w-96 h-96 bg-mo-pink-200 rounded-full blur-3xl" />
+          </div>
+
+          <div className="container mx-auto relative z-10">
+            <motion.div
+              variants={staggerContainer}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, margin: "-100px" }}
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8"
+            >
               {features.map((feature, index) => (
                 <motion.div
                   key={index}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: index * 0.1 }}
-                  className="flex-none w-[80%] snap-center bg-gray-50 rounded-2xl p-6 md:w-auto md:bg-transparent md:p-0 md:text-center md:hover:translate-y-[-5px] md:transition-transform flex items-center md:flex-col gap-4 border border-gray-100 md:border-none"
+                  variants={fadeInUp}
+                  whileHover={{ y: -10, transition: { duration: 0.3 } }}
+                  className="text-center p-8 rounded-2xl hover:bg-mo-pink-50 transition-all duration-300 group cursor-pointer"
                 >
-                  <div className="w-12 h-12 bg-white md:bg-mo-pink-50 rounded-full flex items-center justify-center text-mo-pink-600 shadow-sm md:shadow-none mb-0 md:mb-3 flex-shrink-0">
-                    <feature.icon className="w-6 h-6" />
-                  </div>
-                  <div className="text-left md:text-center">
-                    <h3 className="font-bold text-gray-900 text-sm md:text-base mb-1">{feature.title}</h3>
-                    <p className="text-gray-500 text-xs md:text-sm leading-tight">{feature.description}</p>
-                  </div>
+                  <motion.div
+                    whileHover={{ scale: 1.1, rotate: 5 }}
+                    transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                    className="w-20 h-20 bg-gradient-to-br from-mo-pink-100 to-mo-pink-200 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:shadow-xl transition-shadow"
+                  >
+                    <feature.icon className="w-10 h-10 text-mo-pink-600" />
+                  </motion.div>
+                  <h3 className="font-semibold text-xl mb-3">{feature.title}</h3>
+                  <p className="text-gray-600 leading-relaxed">{feature.description}</p>
                 </motion.div>
               ))}
-            </div>
-          </div>
-        </section>
-
-        {/* Pasamos los productos REALES como prop */}
-        <FeaturedProducts products={featuredProducts} cart={cart} setCart={setCart} />
-
-        <BrandStory />
-        
-        {/* Pasamos los testimonios REALES como prop */}
-        <Testimonials testimonials={testimonialsData} />
-
-        {/* WhatsApp Section */}
-        <section className="py-20 bg-black text-white text-center px-6">
-          <div className="container mx-auto max-w-2xl">
-            <motion.div initial={{ opacity: 0, scale: 0.9 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }}>
-              <MessageCircle className="w-16 h-16 mx-auto mb-6 text-mo-pink-600" />
-              <h2 className="text-3xl md:text-4xl font-serif font-bold mb-4">¿Tenés dudas con tu talle?</h2>
-              <p className="text-gray-400 mb-8 text-lg">Escribinos por WhatsApp. Te ayudamos a elegir el modelo perfecto.</p>
-              <a href="https://wa.me/5491100000000" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-8 py-4 bg-white text-black rounded-full font-bold hover:bg-mo-pink-600 hover:text-white transition-all transform hover:-translate-y-1 shadow-lg">
-                Chatear con nosotros <MessageCircle className="w-5 h-5" />
-              </a>
             </motion.div>
           </div>
         </section>
+
+        {/* Featured Products - Ahora con datos de Supabase */}
+        <FeaturedProducts 
+          cart={cart} 
+          setCart={setCart}
+          products={featuredProducts}
+        />
+
+        {/* Brand Story */}
+        <BrandStory />
+
+        {/* Testimonials - Ahora con datos de Supabase */}
+        <Testimonials testimonials={testimonials} />
+
       </div>
     </PageTransition>
   );
