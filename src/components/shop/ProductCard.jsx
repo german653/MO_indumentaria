@@ -10,51 +10,63 @@ const ProductCard = ({ product, index }) => {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0.1 }}
       transition={{ delay: index * 0.05, duration: 0.4 }}
-      className="group relative bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500 border border-gray-100 flex flex-col"
+      // CAMBIOS AQUÍ:
+      // 1. 'p-3': Agrega espacio interno (el marco blanco).
+      // 2. 'border border-gray-200': Dibuja la línea del borde de la carta.
+      // 3. 'shadow-sm': Una sombra muy suave para que se despegue del fondo.
+      className="flex flex-col h-full bg-white rounded-[20px] border border-gray-200 p-3 shadow-sm hover:shadow-md transition-shadow"
     >
-      {/* Badge (Etiqueta) */}
-      {product.tag && (
-        <div className="absolute top-4 left-4 z-10 px-3 py-1 bg-black text-white text-xs font-bold uppercase tracking-wider rounded-sm">
-          {product.tag}
-        </div>
-      )}
+      {/* 1. IMAGEN */}
+      {/* Ahora tiene 'rounded-xl' para que las esquinas de la foto sean un poco menos redondas que las de la carta */}
+      <Link to={`/producto/${product.slug}`} className="block relative bg-gray-100 aspect-[4/5] overflow-hidden rounded-xl">
+        {/* Badge (Etiqueta) */}
+        {product.tag && (
+          <div className="absolute top-2 left-2 z-10 px-2 py-1 bg-white/90 backdrop-blur-sm text-black text-[10px] font-bold uppercase tracking-wider rounded-md shadow-sm border border-gray-100">
+            {product.tag}
+          </div>
+        )}
 
-      {/* Imagen Principal (ESTÁTICA - Ya no cambia con hover) */}
-      <Link to={`/producto/${product.slug}`} className="block relative overflow-hidden flex-shrink-0">
-        <div className="relative aspect-[3/4] bg-gray-100">
-          <img
-            src={product.images?.[0]}
-            alt={product.name}
-            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" // Un leve zoom al pasar el mouse queda elegante, pero la imagen es la misma
-          />
-        </div>
+        <img
+          src={product.images?.[0]}
+          alt={product.name}
+          className="w-full h-full object-cover" // Imagen estática, sin zoom
+        />
       </Link>
 
-      {/* Información del Producto */}
-      <div className="p-4 md:p-5 flex-grow flex flex-col justify-between">
-        <div className="text-center">
-          <p className="text-xs text-gray-400 mb-1 uppercase tracking-widest">
-            {product.category}
-          </p>
-          <h3 className="font-serif font-bold text-lg mb-2 text-gray-900 line-clamp-1">
-            {product.name}
-          </h3>
-          <div className="flex items-center justify-center gap-2 mb-4">
-            {product.oldPrice && (
-              <span className="text-sm text-gray-400 line-through">
-                ${product.oldPrice.toLocaleString()}
-              </span>
-            )}
-            <span className="text-lg font-medium text-black">
-              ${product.price.toLocaleString()}
-            </span>
+      {/* 2. INFORMACIÓN */}
+      <div className="flex flex-col flex-1 pt-3 px-1">
+        
+        {/* Categoría */}
+        <p className="text-[10px] text-gray-400 uppercase tracking-widest font-medium mb-1">
+          {product.category_name || 'Colección'}
+        </p>
+        
+        {/* Nombre y Precio */}
+        <div className="mb-3">
+          <Link to={`/producto/${product.slug}`}>
+            <h3 className="font-serif text-base leading-tight text-gray-900 line-clamp-2 mb-1">
+              {product.name}
+            </h3>
+          </Link>
+          
+          <div className="flex items-center gap-2">
+             <span className="font-bold text-gray-900 text-sm">
+               ${product.price.toLocaleString()}
+             </span>
+             {product.old_price > 0 && (
+               <span className="text-xs text-gray-400 line-through">
+                 ${product.old_price.toLocaleString()}
+               </span>
+             )}
           </div>
         </div>
-        
-        {/* BOTÓN "VER DETALLES" */}
+
+        {/* Espaciador para empujar el botón al fondo */}
+        <div className="mt-auto"></div>
+
+        {/* 3. BOTÓN */}
         <Link to={`/producto/${product.slug}`} className="w-full">
-          <button className="w-full px-4 py-3 bg-black text-white rounded-full text-sm font-semibold flex items-center justify-center gap-2 hover:bg-mo-pink-600 transition-colors shadow-md group-hover:shadow-lg">
-            <Eye className="w-4 h-4" />
+          <button className="w-full py-2.5 bg-black text-white rounded-lg font-medium text-xs hover:bg-gray-800 transition-colors flex items-center justify-center gap-2">
             Ver Detalles
           </button>
         </Link>
